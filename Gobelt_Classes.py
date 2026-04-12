@@ -3,8 +3,8 @@ from enum import Enum
 
 class player_color_class(Enum):
     
-    black = (0, 0, 0)
-    white = (255, 255, 255)
+    dark = (0, 0, 0)
+    light = (255, 255, 255)
     initial = 0
 
 class player_piece_class:
@@ -15,6 +15,19 @@ class player_piece_class:
     def __init__(self, in_color, in_size):
         self.color = in_color
         self.size = in_size
+
+    def __str__(self):
+        piece_string = 'XXX'
+
+        if self.color == player_color_class.dark:
+            piece_string = f"\033[42m {self.size} \033[0m"
+        elif self.color == player_color_class.light:
+            piece_string = f"\033[45m {self.size} \033[0m"
+
+        if self.size == 0:
+            piece_string = " - "
+        
+        return piece_string
 
 class player_board_class:
     
@@ -27,31 +40,16 @@ class player_board_class:
                 new_piece = player_piece_class(new_player_color, piece_size)
                 self.player_stacks[player_stack].append(new_piece)
 
-    def look_at_player_board(self, stack_num):
-        
-        color_letter = 'X'
-        
-        if self.player_stacks[stack_num]:
-            size = self.player_stacks[stack_num][-1].size
-            color = self.player_stacks[stack_num][-1].color
-
-            if color == player_color_class.black:
-                color_letter = 'B'
-            elif color == player_color_class.white:
-                color_letter = 'W'
-        
-        else:
-            size = 0
-            
-        piece_string = color_letter + str(size)
-        
-        return piece_string
-    
     def get_piece(self, coord):
 
         if not self.player_stacks[coord]:
             return None
         return self.player_stacks[coord].pop()
+    
+    def top_piece(self, coord):
+        if len(self.player_stacks[coord]) == 0:
+            return player_piece_class(player_color_class.initial, 0)
+        return self.player_stacks[coord][-1]
 
 class game_board_class:
     
@@ -65,24 +63,6 @@ class game_board_class:
             for col in range(4):
                 new_piece = player_piece_class(player_color_class.initial, 0)
                 self.board_stacks[row][col].append(new_piece)
-                
-
-    def look_at_game_board(self, row, col):
-        size = self.board_stacks[row][col][-1].size
-        color = self.board_stacks[row][col][-1].color
-        
-        color_letter = 'X'
-        
-        if color == player_color_class.black:
-            color_letter = 'B'
-        elif color == player_color_class.white:
-            color_letter = 'W'
-        elif color == player_color_class.initial:
-            color_letter = 'X'
-        
-        piece_string = color_letter + str(size)
-        
-        return piece_string
     
     def top_piece(self, row, col):
         return self.board_stacks[row][col][-1]

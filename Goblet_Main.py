@@ -9,36 +9,34 @@ while True:
     saved_game = input('Load saved game? (y/n) ').lower()
 
     if saved_game == 'y':
-        game_board, player_white, player_black, current_player = load_game(full_path)
+        game_board, player_light, player_dark, current_player = load_game(full_path)
         print('Loading saved game.')
         break
 
     elif saved_game == 'n':
         print('Initializing new game.')
         
-        player_white = player_board_class(player_color_class.white)
-        player_black = player_board_class(player_color_class.black)
+        player_light = player_board_class(player_color_class.light)
+        player_dark = player_board_class(player_color_class.dark)
 
         game_board = game_board_class()
 
-        current_player = select_start_player(player_white, player_black)
+        current_player = select_start_player(player_light, player_dark)
         break
 
 while True:
-    
-    print(f"{(current_player.color.name).capitalize()}'s turn.")
-    
+
     print_board(game_board)
-    print_player_board(player_white)
-    print_player_board(player_black)
+    print_player_board(player_light)
+    print_player_board(player_dark)
 
     game_piece = player_pick(game_board, current_player)
     
-    player_put(game_piece, game_board)
+    player_put(game_piece, game_board, current_player)
 
-    current_player = player_black if current_player == player_white else player_white
+    current_player = player_dark if current_player == player_light else player_light
 
-    save_game(full_path, game_board, player_white, player_black, current_player)
+    save_game(full_path, game_board, player_light, player_dark, current_player)
 
     if detect_win(game_board):
         break
