@@ -19,6 +19,7 @@ class player_piece_class:
 class player_board_class:
     
     def __init__(self, new_player_color: player_color_class):
+        self.color = new_player_color
         NUM_PLAYER_STACKS = 3
         self.player_stacks = [[] for _ in range(NUM_PLAYER_STACKS)]
         for player_stack in range(3):

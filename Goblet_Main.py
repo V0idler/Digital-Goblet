@@ -2,36 +2,46 @@
 from Gobelt_Classes import *
 from Goblet_Functions import *
 
+program_instructions()
+
 while True:
-    if input('Load saved game? ').lower() == 'y':
-        game_board, player_1, player_2 = load_game()
+
+    saved_game = input('Load saved game? (y/n) ').lower()
+
+    if saved_game == 'y':
+        game_board, player_white, player_black, current_player = load_game(full_path)
         print('Loading saved game.')
         break
-    else:
+
+    elif saved_game == 'n':
         print('Initializing new game.')
         
-        player_1 = player_board_class(player_color_class.white)
-        player_2 = player_board_class(player_color_class.black)
+        player_white = player_board_class(player_color_class.white)
+        player_black = player_board_class(player_color_class.black)
 
         game_board = game_board_class()
+
+        current_player = select_start_player(player_white, player_black)
         break
 
 while True:
-    print_board(game_board)
-    print_player_board(player_1)
-    print_player_board(player_2)
-
-    game_piece = player_pick(game_board, player_1, player_2)
     
-    player_put(game_piece)
+    print(f"{(current_player.color.name).capitalize()}'s turn.")
+    
+    print_board(game_board)
+    print_player_board(player_white)
+    print_player_board(player_black)
 
-    if_win, winner_color = check_win(game_board)
+    game_piece = player_pick(game_board, current_player)
+    
+    player_put(game_piece, game_board)
 
-    if if_win:
-        print_board(game_board)
-        print('Game Over!')
-        print(f'The winner is: {(winner_color).capitalize()}!')
+    current_player = player_black if current_player == player_white else player_white
+
+    save_game(full_path, game_board, player_white, player_black, current_player)
+
+    if detect_win(game_board):
         break
 
-    save_game(game_board, player_1, player_2)
+    
 
