@@ -2,7 +2,7 @@
 from Gobelt_Classes import *
 from Goblet_Functions import *
 
-program_instructions()
+print_program_instructions()
 
 while True:
 
@@ -26,7 +26,7 @@ while True:
 
 while True:
 
-    print_board(game_board)
+    print_game_board(game_board)
     print_player_board(player_light)
     print_player_board(player_dark)
 

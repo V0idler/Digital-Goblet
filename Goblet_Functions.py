@@ -5,33 +5,62 @@ import pickle
 
 full_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'autosave.pkl')
 
-def program_instructions():
+def print_program_instructions():
     print('Welcome to Goblet!')
     print('Valid pick up locations: ')
     print('Player board: a b c')
     print('Gameboard: coordinates 00 to 33')
     print('Game autosaves after each turn.')
 
-def print_board(game_board_in):
+def print_game_board(game_board):
     print('Gameboard: ')
     for col in range(4):
         for row in range(4):
-            print(game_board_in.top_piece(row, col), end="")
+            print(game_board.top_piece(row, col), end="")
         print(" ")
 
-def print_player_board(p_board):
+def print_player_board(player_board):
     print('Player Board: ', end="")
     for stack_num in range(3):
-        print(p_board.top_piece(stack_num), end="")
+        print(player_board.top_piece(stack_num), end="")
         print(" ", end="")
     print(" ")
+
+def save_game(full_path, game_board, player_light, player_dark, current_player):
+
+    with open(full_path, 'wb') as file_save:
+        if current_player == player_light:
+            current_player_id = 'player_light'
+        elif current_player == player_dark:
+            current_player_id = 'player_dark'
+
+        pickle.dump({
+            'game_board': game_board,
+            'player_light': player_light,
+            'player_dark': player_dark,
+            'current_player_id': current_player_id
+        }, file_save)
+
+def load_game(full_path):
+
+    with open(full_path, 'rb') as file_load:
+        game_data = pickle.load(file_load)
+
+        if game_data['current_player_id'] == 'player_light':
+            current_player = game_data['player_light']
+        elif game_data['current_player_id'] == 'player_dark':
+            current_player = game_data['player_dark']
+    
+    return game_data['game_board'], game_data['player_light'], game_data['player_dark'], current_player
 
 def user_interface_pick(current_player):
 
     which_board = 0
 
+    current_player_print = current_player.color.name.capitalize()
+
     while True:
-        pick_up = input(f"Pick up piece {current_player.color.name.capitalize()}: ").strip()
+        pick_up = input(f"Pick up piece {current_player_print}: ").strip().lower()
 
         if len(pick_up) == 2 and pick_up.isdigit():
             which_board = 0
@@ -54,8 +83,10 @@ def user_interface_pick(current_player):
 
 def user_interface_put(current_player):
     
+    current_player_print = current_player.color.name.capitalize()
+
     while True:
-        put_down = input(f"Put down piece {current_player.color.name.capitalize()}: ").strip()
+        put_down = input(f"Put down piece {current_player_print}: ").strip()
 
         if len(put_down) == 2 and put_down.isdigit():
             row_down, col_down = map(int, put_down)
@@ -64,59 +95,6 @@ def user_interface_put(current_player):
                 return row_down, col_down
 
         print('Unvalid put down location, please try again')
-
-def check_win(game_board):
-            
-    for row in range(4):
-        first_piece = game_board.top_piece(row, 0)
-        if first_piece.color != player_color_class.initial:
-            if all(game_board.top_piece(row, col).color == first_piece.color for col in range(4)):
-                return True, first_piece.color.name
-    
-    for col in range(4):
-        first_piece = game_board.top_piece(0, col)
-        if first_piece.color != player_color_class.initial:
-            if all(game_board.top_piece(row, col).color == first_piece.color for row in range(4)):
-                return True, first_piece.color.name
-    
-    first_piece = game_board.top_piece(0, 0)
-    if first_piece.color != player_color_class.initial:
-        if all(game_board.top_piece(i, i).color == first_piece.color for i in range(4)):
-            return True, first_piece.color.name
-    
-    first_piece = game_board.top_piece(3, 0)
-    if first_piece.color != player_color_class.initial:
-        if all(game_board.top_piece(3 - i, i).color == first_piece.color for i in range(4)):
-            return True, first_piece.color.name
-    
-    return False, None
-
-def save_game(full_path, game_board, player_light, player_dark, current_player):
-
-    with open(full_path, 'wb') as file_save:
-        if current_player == player_light:
-            current_player_id = 'player_light'
-        else:
-            current_player_id = 'player_dark'
-
-        pickle.dump({
-            'game_board': game_board,
-            'player_light': player_light,
-            'player_dark': player_dark,
-            'current_player_id': current_player_id
-        }, file_save)
-
-def load_game(full_path):
-
-    with open(full_path, 'rb') as file_load:
-        game_data = pickle.load(file_load)
-
-        if game_data['current_player_id'] == 'player_light':
-            current_player = game_data['player_light']
-        else:
-            current_player = game_data['player_dark']
-    
-    return game_data['game_board'], game_data['player_light'], game_data['player_dark'], current_player
 
 def player_pick(game_board, current_player):
 
@@ -168,18 +146,7 @@ def player_put(game_piece, game_board, current_player):
             break
         else:
             print('You cannot place there, try again.')
-
-def detect_win(game_board):
-
-    if_win, winner_color = check_win(game_board)
-
-    if if_win:
-        print_board(game_board)
-        print('Game Over!')
-        print(f'The winner is: {(winner_color).capitalize()}!')
-        
-        return True
-    
+ 
 def select_start_player(player_light, player_dark):
     
     while True:
@@ -193,4 +160,45 @@ def select_start_player(player_light, player_dark):
                 current_player = player_dark
                 return current_player
 
-            print('Unvalid player color, please try again.')
+            print('Unvalid player selection, please try again.')
+
+def check_win(game_board):
+            
+    #Checks wins in rows
+    for row in range(4):
+        first_piece = game_board.top_piece(row, 0)
+        if first_piece.color != player_color_class.initial:
+            if all(game_board.top_piece(row, col).color == first_piece.color for col in range(4)):
+                return True, first_piece.color.name
+    
+    #Check wins in colums
+    for col in range(4):
+        first_piece = game_board.top_piece(0, col)
+        if first_piece.color != player_color_class.initial:
+            if all(game_board.top_piece(row, col).color == first_piece.color for row in range(4)):
+                return True, first_piece.color.name
+    
+    #Checks win on top-left to bottom-right diagonal
+    first_piece = game_board.top_piece(0, 0)
+    if first_piece.color != player_color_class.initial:
+        if all(game_board.top_piece(i, i).color == first_piece.color for i in range(4)):
+            return True, first_piece.color.name
+    
+    #Checks win on top-right to bottom-left diagonal
+    first_piece = game_board.top_piece(0, 3)
+    if first_piece.color != player_color_class.initial:
+        if all(game_board.top_piece(i, 3 - i).color == first_piece.color for i in range(4)):
+            return True, first_piece.color.name
+    
+    return False, None
+
+def detect_win(game_board):
+
+    if_win, winner_color = check_win(game_board)
+
+    if if_win:
+        print_game_board(game_board)
+        print('Game Over!')
+        print(f'The winner is: {(winner_color).capitalize()}!')
+        
+        return True
