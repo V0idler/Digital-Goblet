@@ -45,6 +45,7 @@ while True:
     #Puts down piece at location selected by the player
     col_down, row_down = check_piece_put(game_piece, game_board, current_player, col_up, row_up, which_board)
 
+    #Records current game move
     record_moves(current_player.color.name, which_board, col_up, row_up, col_down, row_down)
 
     #Switches who's turn it is to whoever's turn it is currently not
@@ -57,7 +58,9 @@ while True:
     if detect_win(game_board):
         break
 
+    #If a tie is detected, print a such and end the game loop
     if check_tie(move_history):
+        print_game_board(game_board)
         print('Game Over!')
         print('Players Tied!')
         break
