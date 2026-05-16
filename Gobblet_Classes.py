@@ -1,4 +1,5 @@
 
+#Imports enumeration module for player_colo_class
 from enum import Enum
 
 #Class that contains a collection of player colors as numbers

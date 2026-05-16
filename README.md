@@ -21,13 +21,13 @@ Turns:
 
 # Program Instructions:
 
-1. First it asks you if you want to load from an autosave
-2. Typing 'y' will load the last autosave from the previous game and the game will continue from there. 
-3. If 'n' is entered then the program will ask which color wants to start, if 'l' is entered then purple starts, if 'd' is entered then green starts. 
-4. Whoever was entered to start goes first, the program will ask for an input of where you want to pick up your piece.
-5. If a letter a, b or c is entered then the piece is picked up from the player board of the current player.
-6. If a coordinate of (0, 0) to (3, 3) (entered as eg: 00) is entered then the player picks up a piece that has already been played on the game board.
-7. After a piece is picked up the program will print the current game board without the picked up piece, then it will ask for an input of where the player would like to put down the piece.
-8. For putting down a piece the input can only be a coordinate (for the game board).
-9. After the current player has successfully picked up and put down a piece then their turn is over and it switches to the next player's turn.
-10. The program continues running in a loop until a player wins or the game is tied and then it is stopped.
+    1. First it asks you if you want to load from an autosave
+    2. Typing 'y' will load the last autosave from the previous game and the game will continue from there. 
+    3. If 'n' is entered then the program will ask which color wants to start, if 'l' is entered then purple starts, if 'd' is entered then green starts. 
+    4. Whoever was entered to start goes first, the program will ask for an input of where you want to pick up your piece.
+    5. If a letter a, b or c is entered then the piece is picked up from the player board of the current player.
+    6. If a coordinate of (0, 0) to (3, 3) (entered as eg: 00) is entered then the player picks up a piece that has already been played on the game board.
+    7. After a piece is picked up the program will print the current game board without the picked up piece, then it will ask for an input of where the player would like to put down the piece.
+    8. For putting down a piece the input can only be a coordinate (for the game board).
+    9. After the current player has successfully picked up and put down a piece then their turn is over and it switches to the next player's turn.
+    10. The program continues running in a loop until a player wins or the game is tied and then it is stopped.

@@ -1,6 +1,8 @@
+
+#Imports other file and pickle module for file saving & loading
 from Gobblet_Classes import *
-import os
 import pickle
+import os
 
 #Prints text explaining the function of the program
 def print_program_instructions():
@@ -69,18 +71,22 @@ def save_game(game_board, player_light, player_dark, current_player):
 #Loads file containing game state from previous game
 def load_game():
 
-    #Opens the file, extracts data using pickle, restores current player to a player based on who the current player was during the save,
-    # returns all loaded game objects, closes file using 'with'
-    with open('.autosave', 'rb') as file_load:
+    #If there is an autosave file, load the file
+    if os.path.exists('.autosave'):
+        #Opens the file, extracts data using pickle, restores current player to a player based on who the current player was during the save,
+        # returns all loaded game objects, closes file using 'with'
+        with open('.autosave', 'rb') as file_load:
 
-        game_data = pickle.load(file_load)
+            game_data = pickle.load(file_load)
 
-        if game_data['current_player_id'] == 'player_light':
-            current_player = game_data['player_light']
-        elif game_data['current_player_id'] == 'player_dark':
-            current_player = game_data['player_dark']
-   
-    return game_data['game_board'], game_data['player_light'], game_data['player_dark'], current_player
+            if game_data['current_player_id'] == 'player_light':
+                current_player = game_data['player_light']
+            elif game_data['current_player_id'] == 'player_dark':
+                current_player = game_data['player_dark']
+    
+        return game_data['game_board'], game_data['player_light'], game_data['player_dark'], current_player
+    else:
+        print('There is no autosave file.')
 
 #Loops collecting input from player for location of picking up a piece until input is confirmed to be a valid pickup location
 def check_location_pick(current_player):
