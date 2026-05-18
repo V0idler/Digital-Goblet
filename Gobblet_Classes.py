@@ -91,7 +91,7 @@ class game_board_class:
 
         for col in range(4):
             for row in range(4):
-                new_piece = player_piece_class(player_color_class, 0)
+                new_piece = player_piece_class(player_color_class.initial, 0)
                 self.board_stacks[col][row].append(new_piece)
    
     #Removes the piece from the top of the stack at the passed in coordinate for the game board and returns it

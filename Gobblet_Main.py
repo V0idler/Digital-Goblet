@@ -82,7 +82,7 @@ while True:
     
     else:
 
-        do_bot_turn(game_board, player_dark, player_light)
+        do_bot_turn(game_board, player_light, player_dark)
 
     #Switches who's turn it is to whoever's turn it is currently not
     current_player = player_dark if current_player == player_light else player_light
