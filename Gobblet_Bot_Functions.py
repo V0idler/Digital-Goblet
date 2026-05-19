@@ -1,73 +1,62 @@
 
 from itertools import combinations 
 from functools import partial
+from Gobblet_Functions import check_win
 
 def is_same_color(pieces):
 
     return all(piece.color == pieces[0].color for piece in pieces)
 
-def find_3_in_a_row(game_board):
+def find_3_in_a_row(game_board, player_dark, player_light):
 
-    potential_moves = []
+    potential_moves = {player_dark.color: [], player_light.color: []}
+    untouchable_row_pieces = {player_dark.color: [], player_light.color: []}
+
+    def process_line(line_coords):
+
+        for line_combos in combinations(line_coords, 3):
+            pieces = [game_board.check_top_piece(c, r) for c, r in line_combos]
+
+            if all(piece.size != 0 for piece in pieces) and is_same_color(pieces):
+
+                line_color = pieces[0].color
+
+                blockers = [(c, r) for c, r in line_coords if game_board.check_top_piece(c, r).color != line_color and game_board.check_top_piece(c, r).size == 4]
+                if blockers:
+                    for block_col, block_row in blockers:
+                        if (block_col, block_row) not in untouchable_row_pieces[line_color]:
+                            untouchable_row_pieces[line_color].append((block_col, block_row))
+                    continue
+                
+                last_coord = [coord for coord in line_coords if coord not in line_combos][0]
+                last_col, last_row = last_coord
+                
+                if game_board.check_top_piece(last_col, last_row).size < 4:
+                    if (last_col, last_row) not in potential_moves[line_color]:
+                        potential_moves[line_color].append((last_col, last_row))
+
+                for (c, r) in line_combos:
+
+                    if line_color != player_dark.color:
+                        if game_board.check_top_piece(c, r).size < 4:
+                                if (c, r) not in potential_moves[line_color]:
+                                    potential_moves[line_color].append((c, r))
+                        else:
+                            if (c, r) not in untouchable_row_pieces[line_color]:
+                                untouchable_row_pieces[line_color].append((c, r))
+
+                    else:
+                        if (c, r) not in untouchable_row_pieces[line_color]:
+                            untouchable_row_pieces[line_color].append((c, r))
 
     #Checks rows
     for row in range(4):
-        full_line = [(col, row) for col in range(4)]
-
-        #Creates every combination of 3 numbers within a range of 4
-        for col_combos in combinations(range(4), 3):
-
-            #List of 3 coordinates, one for every combinations of columns
-            lines = [(col, row) for col in col_combos]
-
-            #Creates a list of every piece at the coordinates for lines
-            pieces = [game_board.check_top_piece(c, r) for c, r in lines]
-
-            #If all the pieces exist and they are the same color
-            if all(piece.size != 0 for piece in pieces):
-                if is_same_color(pieces):
-
-                    #Skips this combination if there is a size 4 piece of the other color in the row
-                    row_color = pieces[0].color
-                    if any(game_board.check_top_piece(c, r).color != row_color and game_board.check_top_piece(c, r).size == 4 for c, r in full_line):
-                        continue
-
-                    #The last unchecked column coordinate
-                    last_col = [col for col in range(4) if col not in col_combos][0]
-                    
-                    if game_board.check_top_piece(last_col, row).size < 4:
-                        potential_moves.append((last_col, row))
-
-                    #If one of the pieces in the 3 in a row is less than 4, add it to potential moves
-                    for c, r in lines:
-                        if game_board.check_top_piece(c, r).size < 4:
-                            potential_moves.append((c, r))
+        process_line([(col, row) for col in range(4)])
 
     #Checks columns
     for col in range(4):
-        full_line = [(col, row) for row in range(4)]
-        for row_combos in combinations(range(4), 3):
-
-            lines = [(col, row) for row in row_combos]
-
-            pieces = [game_board.check_top_piece(c, r) for c, r in lines]
-
-            if all(piece.size != 0 for piece in pieces):
-                if is_same_color(pieces):
-                    
-                    row_color = pieces[0].color
-                    if any(game_board.check_top_piece(c, r).color != row_color and game_board.check_top_piece(c, r).size == 4 for c, r in full_line):
-                        continue
-
-                    last_row = [row for row in range(4) if row not in row_combos][0]
-                    
-                    if game_board.check_top_piece(col, last_row).size < 4:
-                        potential_moves.append((col, last_row))
-
-                    for c, r in lines:
-                        if game_board.check_top_piece(c, r).size < 4:
-                            potential_moves.append((c, r))
-
+        process_line([(col, row) for row in range(4)])
+        
     diagonals = [
         [(i, i) for i in range(4)],
         [(i, 3 - i) for i in range(4)]
@@ -75,31 +64,9 @@ def find_3_in_a_row(game_board):
 
     #Checks diagonals
     for diag in diagonals:
+        process_line(diag)
 
-        for index_combos in combinations(range(4), 3):
-
-            lines = [diag[i] for i in  index_combos]
-            pieces = [game_board.check_top_piece(c, r) for c, r in lines]
-
-            if all(piece.size != 0 for piece in pieces):
-                if is_same_color(pieces):
-
-                    row_color = pieces[0].color
-                    if any(game_board.check_top_piece(c, r).color != row_color and game_board.check_top_piece(c, r).size == 4 for c, r in diag):
-                        continue
-
-                    last_index = [i for i in range(4) if i not in index_combos][0]
-                    last_col, last_row = diag[last_index]
-                    
-                    if game_board.check_top_piece(last_col, last_row).size < 4:
-                        potential_moves.append((last_col, last_row))
-
-                    for c, r in lines:
-                        if game_board.check_top_piece(c, r).size < 4:
-                            potential_moves.append((c, r))
-
-
-    return potential_moves, row_color
+    return potential_moves, untouchable_row_pieces
 
 piece_color_order = {
     1: 0,
@@ -137,12 +104,7 @@ def find_playerboard_piece(player_dark):
     
     return largest_piece_pos
 
-def can_playerlight_win(game_board, player_light):
-
-    potential_moves, row_color = find_3_in_a_row(game_board)
-    return row_color == player_light
-
-def find_gameboard_piece(game_board, player_light):
+def find_gameboard_piece(game_board, player_light, player_dark, potential_moves, untouchable_row_pieces):
 
     largest_piece = None
     largest_piece_size = 0
@@ -150,14 +112,19 @@ def find_gameboard_piece(game_board, player_light):
     for col in range(4):
         for row in range(4):
 
+            if (col, row) in potential_moves or (col, row) in untouchable_row_pieces:
+                continue
+
             piece = game_board.check_top_piece(col, row)
 
-            if piece.size == 0:
+            if piece.size == 0 or (piece.color != player_dark.color):
                 continue
 
             removed_piece = game_board.get_piece(col, row)
 
-            if not can_playerlight_win(game_board, player_light):
+            is_win, winner_player = check_win(game_board)
+
+            if not (is_win and (winner_player == player_light.color)):
 
                 if piece.size > largest_piece_size:
                     largest_piece = (col, row)
@@ -169,50 +136,129 @@ def find_gameboard_piece(game_board, player_light):
 
 def find_largest_piece(game_board,
                        potential_moves, 
-                       near_win_color, player_light, 
-                       player_dark):
+                       player_light, 
+                       player_dark, 
+                       untouchable_row_pieces):
 
     found_piece = None
 
-    if near_win_color == player_dark.color:
-        
-        for space in potential_moves:
+    all_protected_pieces = untouchable_row_pieces[player_dark.color] + untouchable_row_pieces[player_light.color]
 
-            if game_board.check_top_piece(space[0], space[1]).size == 0:
+    if potential_moves[player_dark.color]:
 
-                found_piece = find_playerboard_piece(player_dark)
+        targets = potential_moves[player_dark.color]
 
-            else:
+        gameboard_coord = find_gameboard_piece(game_board, player_light, player_dark, targets, all_protected_pieces)
+        gameboard_size = game_board.check_top_piece(gameboard_coord[0], gameboard_coord[1]).size if gameboard_coord is not None else 0
 
-                found_piece = find_gameboard_piece(game_board, player_light)
+        if gameboard_size > 0:
+            found_piece = gameboard_coord
 
-            if found_piece is not None:
-                break
+    if potential_moves[player_light.color]:
 
-    elif near_win_color == player_light.color:
+        targets = potential_moves[player_light.color]
 
-        found_piece = find_playerboard_piece(player_dark)
+        playerboard_stack = find_playerboard_piece(player_dark)
+        playerboard_size = player_dark.check_top_piece(playerboard_stack).size if playerboard_stack is not None else 0
 
-        if found_piece is None:
+        gameboard_coord = find_gameboard_piece(game_board, player_light, player_dark, targets, all_protected_pieces)
+        gameboard_size = game_board.check_top_piece(gameboard_coord[0], gameboard_coord[1]).size if gameboard_coord is not None else 0
 
-            found_piece = find_gameboard_piece(game_board, player_light)
+        if playerboard_size >= gameboard_size and playerboard_size > 0:
+            found_piece = playerboard_stack
+        elif gameboard_size > 0:
+            found_piece = gameboard_coord
 
     return found_piece
 
+def gameboard_largest_piece(bot_targets, game_board, largest_piece_pos):
+
+    large_col, large_row = largest_piece_pos
+
+    for move in bot_targets:
+
+        col_down, row_down = move
+
+        if game_board.check_top_piece(large_col, large_row).size > game_board.check_top_piece(col_down, row_down).size:
+
+            moved_piece = game_board.get_piece(large_col, large_row)
+            game_board.put_piece(col_down, row_down, moved_piece)
+
+        else:
+            print('no gameboard')
+
+def playerboard_largest_piece(bot_targets, player_board, game_board, largest_piece_pos):
+
+    for move in bot_targets:
+                
+                col_down, row_down = move
+
+                if player_board.check_top_piece(largest_piece_pos).size > game_board.check_top_piece(col_down, row_down).size:
+
+                    moved_piece = player_board.get_piece(largest_piece_pos)
+                    game_board.put_piece(col_down, row_down, moved_piece)
+
+                    break
+
+                else:
+                    print('no playerboard')
+
 def do_bot_turn(game_board, player_light, player_dark):
 
-    potential_moves, row_color = find_3_in_a_row(game_board)
+    potential_moves, untouchable_row_pieces = find_3_in_a_row(game_board, player_dark, player_light)
 
     moves_sort = partial(
         check_for_sort, 
         game_board,
         piece_color_order,
         )
-    potential_moves.sort(key=moves_sort)
 
-    print(f'Potential Moves: {potential_moves}')
+    dark_bot_targets = potential_moves[player_dark.color]
+    dark_bot_targets.sort(key=moves_sort)
 
-    largest_piece_pos = find_largest_piece(game_board, potential_moves, row_color, player_light, player_dark)
+    light_bot_targets = potential_moves[player_light.color]
+    light_bot_targets.sort(key=moves_sort)
+
+
+    print(f'Potential Moves: {dark_bot_targets}, {light_bot_targets}')
+
+    largest_piece_pos = find_largest_piece(game_board, potential_moves, player_light, player_dark, untouchable_row_pieces)
 
     print(largest_piece_pos)
+
+    if largest_piece_pos is not None:
+        if isinstance(largest_piece_pos, tuple):
+
+            if dark_bot_targets:
+
+                gameboard_largest_piece(dark_bot_targets, game_board, largest_piece_pos)
+                
+            elif light_bot_targets:
+
+                gameboard_largest_piece(light_bot_targets, game_board, largest_piece_pos)
+
+            else:
+                print('no gameboard targets')
+
+        elif isinstance(largest_piece_pos, int):
+
+            if dark_bot_targets:
+
+                playerboard_largest_piece(dark_bot_targets, player_dark, game_board, largest_piece_pos)
+                
+            elif light_bot_targets:
+
+                playerboard_largest_piece(light_bot_targets, player_dark, game_board, largest_piece_pos)
+
+            else:
+                print('no playerboard targets')
+
+    else:
+        print('no 3 in a row')
+
+
+        
+
+                
+
 
