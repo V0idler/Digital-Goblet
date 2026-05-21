@@ -51,7 +51,7 @@ while True:
     elif saved_game == 'n':
         print('Initializing new game.')
        
-        player_light, player_dark, game_board, current_player = setup_newgame()
+        player_light, player_dark, game_board = setup_newgame()
         current_player = select_start_player(player_light, player_dark)
         
         break

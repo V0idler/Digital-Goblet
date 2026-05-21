@@ -2,6 +2,7 @@
 from itertools import combinations 
 from functools import partial
 from Gobblet_Functions import check_win
+import random
 
 def is_same_color(pieces):
 
@@ -109,10 +110,23 @@ def find_gameboard_piece(game_board, player_light, player_dark, potential_moves,
     largest_piece = None
     largest_piece_size = 0
 
+    avoid_coords = []
+
+    if isinstance(potential_moves, dict):
+        avoid_coords += potential_moves.get(player_dark.color, []) + potential_moves.get(player_light.color, [])
+    else:
+        avoid_coords += potential_moves
+
+    if isinstance(untouchable_row_pieces, dict):
+        avoid_coords += untouchable_row_pieces.get(player_dark.color, []) + untouchable_row_pieces.get(player_light.color, [])
+    else:
+        avoid_coords += untouchable_row_pieces
+
+
     for col in range(4):
         for row in range(4):
 
-            if (col, row) in potential_moves or (col, row) in untouchable_row_pieces:
+            if (col, row) in avoid_coords:
                 continue
 
             piece = game_board.check_top_piece(col, row)
@@ -183,9 +197,10 @@ def gameboard_largest_piece(bot_targets, game_board, largest_piece_pos):
 
             moved_piece = game_board.get_piece(large_col, large_row)
             game_board.put_piece(col_down, row_down, moved_piece)
+            break
 
         else:
-            print('no gameboard')
+            print('no gameboard in funct')
 
 def playerboard_largest_piece(bot_targets, player_board, game_board, largest_piece_pos):
 
@@ -197,11 +212,68 @@ def playerboard_largest_piece(bot_targets, player_board, game_board, largest_pie
 
                     moved_piece = player_board.get_piece(largest_piece_pos)
                     game_board.put_piece(col_down, row_down, moved_piece)
-
                     break
 
                 else:
-                    print('no playerboard')
+                    print('no playerboard in funct')
+
+def random_bot_turn(game_board, player_dark):
+
+    while True:
+
+        full_playerboard = False
+        empty_playerboard = False
+        
+        if all(player_dark.check_top_piece(stack).size == 4 for stack in range(3)):
+            full_playerboard = True
+        
+        if all(player_dark.check_top_piece(stack).size == 0 for stack in range(3)):
+            empty_playerboard = True
+
+        options = [True, False]
+        weights = [90, 10]
+
+        if full_playerboard:
+            select_playerboard = True
+        elif empty_playerboard:
+            select_playerboard = False
+        else:
+            select_playerboard = random.choices(options, weights = weights, k=1)[0]
+
+        picked_piece_preview = None
+
+        if select_playerboard:
+            rand_stack = random.randint(0, 2)
+                                        
+            if player_dark.check_top_piece(rand_stack).size > 0:
+                picked_piece_preview = player_dark.check_top_piece(rand_stack)
+            else:
+                continue
+            
+        else:
+            rand_col_pick = random.randint(0, 3)
+            rand_row_pick = random.randint(0, 3)
+            gameboard_target = game_board.check_top_piece(rand_col_pick, rand_row_pick)
+
+            if gameboard_target.size > 0 and gameboard_target.color == player_dark.color:
+                picked_piece_preview = game_board.check_top_piece(rand_col_pick, rand_row_pick)
+            else:
+                continue
+
+        rand_col_put = random.randint(0, 3)
+        rand_row_put = random.randint(0, 3)
+        target_preview = game_board.check_top_piece(rand_col_put, rand_row_put)
+
+        if picked_piece_preview.size > target_preview.size:
+
+            if select_playerboard:
+                actual_piece = player_dark.get_piece(rand_stack)
+            else:
+                actual_piece = game_board.get_piece(rand_col_pick, rand_row_pick)
+            
+            game_board.put_piece(rand_col_put, rand_row_put, actual_piece)
+
+            break
 
 def do_bot_turn(game_board, player_light, player_dark):
 
@@ -224,7 +296,7 @@ def do_bot_turn(game_board, player_light, player_dark):
 
     largest_piece_pos = find_largest_piece(game_board, potential_moves, player_light, player_dark, untouchable_row_pieces)
 
-    print(largest_piece_pos)
+    print(f'Pick up piece at: {largest_piece_pos}')
 
     if largest_piece_pos is not None:
         if isinstance(largest_piece_pos, tuple):
@@ -239,6 +311,7 @@ def do_bot_turn(game_board, player_light, player_dark):
 
             else:
                 print('no gameboard targets')
+                random_bot_turn(game_board, player_dark)
 
         elif isinstance(largest_piece_pos, int):
 
@@ -252,9 +325,11 @@ def do_bot_turn(game_board, player_light, player_dark):
 
             else:
                 print('no playerboard targets')
+                random_bot_turn(game_board, player_dark)
 
     else:
         print('no 3 in a row')
+        random_bot_turn(game_board, player_dark)
 
 
         
