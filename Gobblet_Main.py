@@ -3,8 +3,14 @@
 from Gobblet_Classes import *
 from Gobblet_Functions import *
 from Gobblet_Bot_Functions import *
+from Gobblet_Pygame import *
 
 import json
+
+import sys, pygame
+pygame.init()
+
+
 
 def setup_newgame():
     player_light = player_board_class(player_color_class.light)
@@ -32,6 +38,9 @@ def load_json():
 
 print_program_instructions()
 
+player_light, player_dark, game_board, current_player = load_json()
+
+'''
 #Loop asking if the players want to load the game, continues until a valid input is entered
 while True:
 
@@ -55,9 +64,20 @@ while True:
         current_player = select_start_player(player_light, player_dark)
         
         break
+'''
 
 #Plays out game until a player wins
 while True:
+
+    clock.tick(60)
+
+    screen.fill(med_color)
+
+    gen_zones_gameboard()
+
+    draw_gameboard_pieces(game_board)
+    draw_dark_playerboard(player_dark)
+    draw_light_playerboard(player_light)
 
     #Prints current game state
     print_game_board(game_board)
@@ -92,7 +112,8 @@ while True:
 
     #If a win is detected, plays out function for a detected win and ends the game loop
     if detect_win(game_board):
-        break
+        #break
+        print(' ')
 
     #If a tie is detected, print a such and end the game loop
     if check_tie(move_history):
@@ -100,3 +121,6 @@ while True:
         print('Game Over!')
         print('Players Tied!')
         break
+
+
+    pygame.display.flip()
