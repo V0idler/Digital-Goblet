@@ -38,7 +38,9 @@ def load_json():
 
 print_program_instructions()
 
-player_light, player_dark, game_board, current_player = load_json()
+#player_light, player_dark, game_board, current_player = load_json()
+player_light, player_dark, game_board = setup_newgame()
+current_player = player_light
 
 '''
 #Loop asking if the players want to load the game, continues until a valid input is entered
@@ -65,50 +67,57 @@ while True:
         
         break
 '''
+picking_piece = True
+selected_piece = None
+col_up, row_up = None, None
+piece_source_board = None
+
 
 #Plays out game until a player wins
 while True:
 
     clock.tick(60)
-
-    screen.fill(med_color)
-
-    gen_zones_gameboard()
-
-    draw_gameboard_pieces(game_board)
-    draw_dark_playerboard(player_dark)
-    draw_light_playerboard(player_light)
-
-    #Prints current game state
-    print_game_board(game_board)
-    print_player_board(player_light)
-    print_player_board(player_dark)
+    move_completed = False
 
     if current_player == player_light:
 
-        #Picks up piece at the location selected by the player
-        game_piece, col_up, row_up, which_board = check_piece_pick(game_board, current_player)
-    
-        #Prints current game state
-        print_game_board(game_board)
-        print_player_board(player_light)
-        print_player_board(player_dark)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
 
-        #Puts down piece at location selected by the player
-        col_down, row_down = check_piece_put(game_piece, game_board, current_player, col_up, row_up, which_board)
-
-        #Records current game move
-        record_moves(current_player.color.name, which_board, col_up, row_up, col_down, row_down)
-    
+                move_completed, picking_piece, selected_piece, col_up, row_up, piece_source_board = player_mouse_click(
+                    mouse_pos, game_board, current_player, player_light, picking_piece, selected_piece, col_up, row_up, piece_source_board)
+            
     else:
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
         do_bot_turn(game_board, player_light, player_dark)
+        move_completed = True
+    
+        pygame.time.delay(500)
 
-    #Switches who's turn it is to whoever's turn it is currently not
-    current_player = player_dark if current_player == player_light else player_light
+    if move_completed:
 
-    #Saves game automatically after every turn
-    save_game(game_board, player_light, player_dark, current_player)
+        #Switches who's turn it is to whoever's turn it is currently not
+        current_player = player_dark if current_player == player_light else player_light
+
+        #Saves game automatically after every turn
+        save_game(game_board, player_light, player_dark, current_player)
+
+    screen.fill(med_color)
+    gen_zones_gameboard()
+    draw_gameboard_pieces(game_board)
+    draw_dark_playerboard(player_dark)
+    draw_light_playerboard(player_light)
+    draw_selected_piece(selected_piece)
 
     #If a win is detected, plays out function for a detected win and ends the game loop
     if detect_win(game_board):
@@ -117,7 +126,6 @@ while True:
 
     #If a tie is detected, print a such and end the game loop
     if check_tie(move_history):
-        print_game_board(game_board)
         print('Game Over!')
         print('Players Tied!')
         break

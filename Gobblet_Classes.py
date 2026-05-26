@@ -19,22 +19,6 @@ class player_piece_class:
     def __init__(self, in_color, in_size):
         self.color = in_color
         self.size = in_size
-
-    #Defines what to do when print() is called for a player piece
-    def __str__(self):
-        piece_string = 'XXX'
-
-        #If piece size is 0, print dash
-        if self.size == 0:
-            piece_string = " - "
-       
-        #If piece has a valid color, print piece size with assigned background color
-        if self.color == player_color_class.dark:
-            piece_string = f"\033[42m {self.size} \033[0m"
-        elif self.color == player_color_class.light:
-            piece_string = f"\033[45m {self.size} \033[0m"
-
-        return piece_string
    
     def __bool__(self):
         return self.size != 0

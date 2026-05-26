@@ -1,7 +1,7 @@
 
 from itertools import combinations 
 from functools import partial
-from Gobblet_Functions import check_win
+from Gobblet_Functions import check_win, record_moves
 import random
 
 #Returns wether or not the list of inputted pieces are the same color
@@ -95,11 +95,13 @@ def find_playerboard_piece(player_dark):
 
     for stack_pos in range(3):
 
-        top_piece = player_dark.player_stacks[stack_pos][-1]
+        if player_dark.check_top_piece(stack_pos).size > 0:
 
-        if top_piece.size > largest_piece_size:
-            largest_piece_size = top_piece.size
-            largest_piece_pos = stack_pos
+            top_piece = player_dark.check_top_piece(stack_pos)
+
+            if top_piece.size > largest_piece_size:
+                largest_piece_size = top_piece.size
+                largest_piece_pos = stack_pos
     
     return largest_piece_pos
 
@@ -216,32 +218,26 @@ def find_largest_piece(game_board,
     return found_piece
 
 #Moves the largest piece for blocking/winning if it is from the gameboard & larger than the piece at the target coordinates
-def moves_largest_gameboard_piece(bot_targets, game_board, largest_piece_pos):
+def moves_largest_gameboard_piece(bot_targets, game_board, largest_piece_pos, player_dark):
 
     large_col, large_row = largest_piece_pos
     move = False
 
     for move in bot_targets:
-
         col_down, row_down = move
 
-        #If the largest selected piece is bigger than the target piece:
         if game_board.check_top_piece(large_col, large_row).size > game_board.check_top_piece(col_down, row_down).size:
-
-            #Place it there
             moved_piece = game_board.get_piece(large_col, large_row)
             game_board.put_piece(col_down, row_down, moved_piece)
+            record_moves(player_dark.color.name, 'game_board', large_col, large_row, col_down, row_down)
             moved = True
             break
 
     #If the largest piece was not placed, then it can't be 
-    if not moved:
-        print('no gameboard in funct')
-
     return moved
 
 #Moves the largest piece for blocking/winning if it is from the playerboard & larger than the piece at the target coordinates
-def moves_largest_playerboard_piece(bot_targets, player_board, game_board, largest_piece_pos, is_scoring_turn):
+def moves_largest_playerboard_piece(bot_targets, player_board, game_board, largest_piece_pos, is_scoring_turn, player_dark):
 
     moved = False
 
@@ -260,12 +256,11 @@ def moves_largest_playerboard_piece(bot_targets, player_board, game_board, large
 
             moved_piece = player_board.get_piece(largest_piece_pos)
             game_board.put_piece(col_down, row_down, moved_piece)
+            record_moves(player_dark.color.name, 'player_board', largest_piece_pos, 0, col_down, row_down)
             moved = True
             break
     
     #If the largest piece was not placed, then it can't be 
-    if not moved:
-        print('no gameboard in funct')
 
     return moved     
 
@@ -350,9 +345,11 @@ def random_bot_turn(game_board, player_dark):
             #If the selected board was playerboard then take the piece from there
             if select_playerboard:
                 actual_piece = player_dark.get_piece(rand_stack)
+                record_moves(player_dark.color.name, 'player_board', rand_stack, 0, rand_col_put, rand_row_put)
             #If the selected board was gameboard then take the piece from there
             else:
                 actual_piece = game_board.get_piece(rand_col_pick, rand_row_pick)
+                record_moves(player_dark.color.name, 'game_board', rand_col_pick, rand_row_pick, rand_col_put, rand_row_put)
             
             #Puts down the piece
             game_board.put_piece(rand_col_put, rand_row_put, actual_piece)
@@ -400,13 +397,8 @@ def do_bot_turn(game_board, player_light, player_dark):
     light_bot_targets = potential_moves[player_light.color]
     light_bot_targets.sort(key=moves_sort)
 
-
-    print(f'Potential Moves: {dark_bot_targets}, {light_bot_targets}')
-
     #Retrieves the coordinate for the largest available piece for blocking/winning
     largest_piece_pos = find_largest_piece(game_board, potential_moves, player_light, player_dark, untouchable_row_pieces)
-
-    print(f'Pick up piece at: {largest_piece_pos}')
 
     move_executed = False
 
@@ -420,17 +412,16 @@ def do_bot_turn(game_board, player_light, player_dark):
             if dark_bot_targets:
 
                 #Try to win using largest piece from the gameboard
-                move_executed = moves_largest_gameboard_piece(dark_bot_targets, game_board, largest_piece_pos)
+                move_executed = moves_largest_gameboard_piece(dark_bot_targets, game_board, largest_piece_pos, player_dark)
                 
             #If the player needs to be blocked:
             elif light_bot_targets:
 
                 #Try to block using largest piece from the gameboard
-                move_executed = moves_largest_gameboard_piece(light_bot_targets, game_board, largest_piece_pos)
+                move_executed = moves_largest_gameboard_piece(light_bot_targets, game_board, largest_piece_pos, player_dark)
 
             #If the move was not fully executed, then it is not possible and a random move is completed
             if not move_executed:
-                print('no gameboard targets')
                 random_bot_turn(game_board, player_dark)
 
         #If it is a playerboard coordinate:
@@ -440,21 +431,19 @@ def do_bot_turn(game_board, player_light, player_dark):
             if dark_bot_targets:
 
                 #Try to win using largest piece from the playerboard
-                move_executed = moves_largest_playerboard_piece(dark_bot_targets, player_dark, game_board, largest_piece_pos, is_scoring_turn = True)
+                move_executed = moves_largest_playerboard_piece(dark_bot_targets, player_dark, game_board, largest_piece_pos, True, player_dark)
                 
             #If the player needs to be blocked:
             elif light_bot_targets:
 
                 #Try to block using largest piece from the playerboard
-                move_executed = moves_largest_playerboard_piece(light_bot_targets, player_dark, game_board, largest_piece_pos, is_scoring_turn = False)
+                move_executed = moves_largest_playerboard_piece(light_bot_targets, player_dark, game_board, largest_piece_pos, False, player_dark)
 
             #If the move was not fully executed, then it is not possible and a random move is completed
             if not move_executed:
-                print('no playerboard targets')
                 random_bot_turn(game_board, player_dark)
     
     #If there was no largest piece meaning there is no 3 in a line,
     # then complete a random move
     else:
-        print('no 3 in a row')
         random_bot_turn(game_board, player_dark)

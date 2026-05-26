@@ -32,24 +32,6 @@ def select_start_player(player_light, player_dark):
             #If an unvalid input was entered, loops until a valid one is entered
             print('Unvalid player selection, please try again.')
 
-#Prints the current state of the gameboard with reference coordinates
-def print_game_board(game_board):
-    print('Gameboard: ')
-    print('   0  1  2  3 ')
-    for row in range(4):
-        print(f'{row} ', end='')
-        for col in range(4):
-            print(game_board.check_top_piece(col, row), end="")
-        print(" ")
-
-#Prints the current state of the player board of passed in player
-def print_player_board(player_board):
-    print('Player Board: ', end="")
-    for stack_num in range(3):
-        print(player_board.check_top_piece(stack_num), end="")
-        print(" ", end="")
-    print(" ")
-
 #Saves the current game state by overwriting the previous save
 def save_game(game_board, player_light, player_dark, current_player):
 
@@ -268,7 +250,6 @@ def detect_win(game_board):
     if_win, winner_color = check_win(game_board)
 
     if if_win:
-        print_game_board(game_board)
         print('Game Over!')
         print(f'The winner is: {(winner_color).capitalize()}!')
        
