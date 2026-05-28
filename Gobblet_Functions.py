@@ -244,17 +244,6 @@ def check_win(game_board):
    
     return False, None
 
-#Checks if a player won, if yes prints the game board (to see the win), game over, who the winner is, and returns True
-def detect_win(game_board):
-
-    if_win, winner_color = check_win(game_board)
-
-    if if_win:
-        print('Game Over!')
-        print(f'The winner is: {(winner_color).capitalize()}!')
-       
-        return True
-
 #Checks if there is a near win by checking if there are 3 pieces of the same color in the rows, columns, and diagonals of the game board,
 # If yes, returns true and which player it is with 3 in a row
 def check_near_win(game_board):

@@ -10,8 +10,6 @@ import json
 import sys, pygame
 pygame.init()
 
-
-
 def setup_newgame():
     player_light = player_board_class(player_color_class.light)
     player_dark = player_board_class(player_color_class.dark)
@@ -39,39 +37,53 @@ def load_json():
 print_program_instructions()
 
 #player_light, player_dark, game_board, current_player = load_json()
-player_light, player_dark, game_board = setup_newgame()
-current_player = player_light
 
-'''
+menu_active = True
+
 #Loop asking if the players want to load the game, continues until a valid input is entered
-while True:
+while menu_active:
 
-    saved_game = input('Load saved game? (y/n) ').lower()
+    clock.tick(60)
 
-    #If player wants to load game, plays out load game function which retrieves previous game state
-    if saved_game == 'y':
+    screen.fill(med_color)
+
+    load_button, newgame_button = draw_menu()
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
         
-        print('Loading saved game.')
-        #game_board, player_light, player_dark, current_player = load_game()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
 
-        player_light, player_dark, game_board, current_player = load_json()
+            if load_button.collidepoint(mouse_pos):
 
-        break
+                game_board, player_light, player_dark, current_player = load_game()
 
-    #If player does not want to load game, generates new game objects using classes and asks for a starting player color
-    elif saved_game == 'n':
-        print('Initializing new game.')
-       
-        player_light, player_dark, game_board = setup_newgame()
-        current_player = select_start_player(player_light, player_dark)
-        
-        break
-'''
+                #player_light, player_dark, game_board, current_player = load_json()
+
+                menu_active = False
+                break
+            
+            #If player does not want to load game, generates new game objects 
+            # using classes and asks for a starting player color
+            if newgame_button.collidepoint(mouse_pos):
+            
+                player_light, player_dark, game_board = setup_newgame()
+                current_player = player_light
+
+                menu_active = False
+                break
+
+
+    pygame.display.flip()
+
 picking_piece = True
 selected_piece = None
 col_up, row_up = None, None
 piece_source_board = None
-
+game_active = True
 
 #Plays out game until a player wins
 while True:
@@ -79,29 +91,29 @@ while True:
     clock.tick(60)
     move_completed = False
 
-    if current_player == player_light:
+    restart_button = draw_restart_button()
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
 
+            if restart_button.collidepoint(mouse_pos):
+                player_light, player_dark, game_board = setup_newgame()
+                current_player = player_light
+
+            if game_active and current_player == player_light:
                 move_completed, picking_piece, selected_piece, col_up, row_up, piece_source_board = player_mouse_click(
                     mouse_pos, game_board, current_player, player_light, picking_piece, selected_piece, col_up, row_up, piece_source_board)
-            
-    else:
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+        
+    if game_active and current_player == player_dark:
 
         do_bot_turn(game_board, player_light, player_dark)
         move_completed = True
-    
+
         pygame.time.delay(500)
 
     if move_completed:
@@ -115,14 +127,23 @@ while True:
     screen.fill(med_color)
     gen_zones_gameboard()
     draw_gameboard_pieces(game_board)
+    draw_playerboard_backing()
     draw_dark_playerboard(player_dark)
     draw_light_playerboard(player_light)
     draw_selected_piece(selected_piece)
 
-    #If a win is detected, plays out function for a detected win and ends the game loop
-    if detect_win(game_board):
-        #break
-        print(' ')
+    if_win, winner_color = check_win(game_board)
+
+    #If a win is detected, end the game loop
+    if if_win:
+        game_active = False
+
+    if not game_active:
+        win_text = basic_font.render(f'Game Over', True, off_white)
+        screen.blit(win_text, (400, 300))
+
+        winner_text = basic_font.render(f'Winner is: {winner_color.capitalize()}', True, off_white)
+        screen.blit(winner_text, (400, 360))
 
     #If a tie is detected, print a such and end the game loop
     if check_tie(move_history):
