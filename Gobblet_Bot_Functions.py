@@ -1,7 +1,7 @@
 
 from itertools import combinations 
 from functools import partial
-from Gobblet_Functions import check_win
+from Gobblet_Functions import check_win, check_near_win
 import random
 
 #Returns wether or not the list of inputted pieces are the same color
@@ -95,7 +95,7 @@ def find_playerboard_piece(player_dark):
 
     for stack_pos in range(3):
 
-        top_piece = player_dark.player_stacks[stack_pos][-1]
+        top_piece = player_dark.check_top_piece(stack_pos)
 
         if top_piece.size > largest_piece_size:
             largest_piece_size = top_piece.size
@@ -122,22 +122,23 @@ def find_gameboard_piece(game_board, player_light, player_dark, potential_moves,
     for col in range(4):
         for row in range(4):
 
-            #Skips piece if it part of the coordinates to be avoided
+            #Skips piece if it is part of the coordinates to be avoided
             if (col, row) in avoid_coords:
                 continue
 
             piece = game_board.check_top_piece(col, row)
 
-            #Skips piece is is size 0 (empty) or not the color of the bot
+            #Skips piece if it is size 0 (empty) or not the color of the bot
             if piece.size == 0 or (piece.color != player_dark.color):
                 continue
 
             #If piece is so far valid, remove the piece from the gameboard and check for a win
             removed_piece = game_board.get_piece(col, row)
             is_win, winner_player = check_win(game_board)
+            near_win = check_near_win(game_board)
 
             #If there is not a win
-            if not is_win:
+            if not is_win and not near_win:
 
                 #If the piece is a size 4 (the largest) then stop checking for a larger one
                 if piece.size == 4:
@@ -353,9 +354,26 @@ def random_bot_turn(game_board, player_dark):
             #If the selected board was gameboard then take the piece from there
             else:
                 actual_piece = game_board.get_piece(rand_col_pick, rand_row_pick)
-            
+                
             #Puts down the piece
             game_board.put_piece(rand_col_put, rand_row_put, actual_piece)
+
+            is_win, winner = check_win(game_board)
+            is_near_win, near_win_player = check_near_win(game_board)
+
+            #If moving the piece creates a 3 or 4 in a line:
+            if is_win or is_near_win:
+
+                game_board.get_piece(rand_col_put, rand_row_put)
+
+                #Put the piece back where it came from
+                if select_playerboard:
+                    player_dark.player_stacks[rand_stack].append(actual_piece)
+
+                else:
+                    game_board.put_piece(rand_col_pick, rand_row_pick, actual_piece)
+
+                continue
 
             break
 
