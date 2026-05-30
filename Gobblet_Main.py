@@ -91,8 +91,6 @@ while True:
     clock.tick(60)
     move_completed = False
 
-    restart_button = draw_restart_button()
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -104,6 +102,7 @@ while True:
             if restart_button.collidepoint(mouse_pos):
                 player_light, player_dark, game_board = setup_newgame()
                 current_player = player_light
+                game_active = True
 
             if game_active and current_player == player_light:
                 move_completed, picking_piece, selected_piece, col_up, row_up, piece_source_board = player_mouse_click(
@@ -131,6 +130,7 @@ while True:
     draw_dark_playerboard(player_dark)
     draw_light_playerboard(player_light)
     draw_selected_piece(selected_piece)
+    restart_button = draw_restart_button()
 
     if_win, winner_color = check_win(game_board)
 
