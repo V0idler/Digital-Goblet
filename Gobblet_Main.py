@@ -4,7 +4,7 @@ from Gobblet_Classes import *
 from Gobblet_Functions import *
 from Gobblet_Bot_Functions import *
 from Gobblet_Pygame import *
-
+import random
 import json
 
 import sys, pygame
@@ -71,7 +71,7 @@ while menu_active:
             if newgame_button.collidepoint(mouse_pos):
             
                 player_light, player_dark, game_board = setup_newgame()
-                current_player = player_light
+                current_player = random.choice((player_light, player_dark))
 
                 menu_active = False
                 break
@@ -101,7 +101,7 @@ while True:
 
             if restart_button.collidepoint(mouse_pos):
                 player_light, player_dark, game_board = setup_newgame()
-                current_player = player_light
+                current_player = random.choice((player_light, player_dark))
                 game_active = True
 
             if game_active and current_player == player_light:
@@ -139,11 +139,7 @@ while True:
         game_active = False
 
     if not game_active:
-        win_text = basic_font.render(f'Game Over', True, off_white)
-        screen.blit(win_text, (400, 300))
-
-        winner_text = basic_font.render(f'Winner is: {winner_color.capitalize()}', True, off_white)
-        screen.blit(winner_text, (400, 360))
+        draw_game_over_text(winner_color, player_dark, player_light)
 
     #If a tie is detected, print a such and end the game loop
     if check_tie(move_history):

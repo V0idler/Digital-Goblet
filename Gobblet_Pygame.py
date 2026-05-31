@@ -121,6 +121,40 @@ def draw_restart_button():
 
     return restart_rect_out
 
+def draw_game_over_text(winner_color, player_dark, player_light):
+
+    base_width = 190
+    base_height = 105
+
+    button_x = 375
+    button_y = 200
+
+    in_adjust = border_thickness * 2
+
+    if winner_color == player_dark.color.name:
+        button_out_color = dark_out_color
+        button_in_color = dark_piece_color
+    elif winner_color == player_light.color.name:
+        button_out_color = light_out_color
+        button_in_color = light_piece_color
+
+    winner_rect_out = pygame.Rect(button_x, button_y, base_width, base_height)
+    winner_rect_in = pygame.Rect(button_x + border_thickness, button_y + border_thickness, base_width - in_adjust, base_height - in_adjust)
+
+    pygame.draw.rect(screen, button_out_color, winner_rect_out)
+    pygame.draw.rect(screen, button_in_color, winner_rect_in)
+
+
+    win_text = basic_font.render(f'Game Over', True, off_white)
+    screen.blit(win_text, (button_x + 30, button_y + 15))
+
+    winner_is_text = basic_font.render(f'Winner is:', True, off_white)
+    screen.blit(winner_is_text, (button_x + 35, button_y + 40))
+
+    winner_text = basic_font.render(f'{winner_color.capitalize()}', True, off_white)
+    screen.blit(winner_text, (button_x + 65, button_y + 65))
+    
+
 # Gameboard ----------------------------------------------------------------
 
 gameboard_zones = []
