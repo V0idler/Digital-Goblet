@@ -1,8 +1,50 @@
 
 from itertools import combinations 
 from functools import partial
-from Gobblet_Functions import check_win, record_moves
+from Gobblet_Functions import check_win, check_near_win, record_moves
 import random
+
+#Checks if there is a 2 in a line for the bot without player pieces and returns the appropriate coordinates for adding to the line
+def find_2_in_a_line(game_board, player_dark):
+
+    potential_moves = []
+
+    def process_line(line_coords):
+        pieces = [game_board.check_top_piece(c, r) for c, r in line_coords]
+
+        dark_count = 0
+        empty_coords = []
+
+        for coord, piece in zip(line_coords, pieces):
+            if piece.size == 0:
+                empty_coords.append(coord)
+            elif piece.color == player_dark.color:
+                dark_count += 1
+
+        if dark_count == 2 and len(empty_coords) == 2:
+            for coord in empty_coords:
+                if coord not in potential_moves:
+                    potential_moves.append(coord)
+
+    #Checks rows
+    for row in range(4):
+        process_line([(col, row) for col in range(4)])
+
+    #Checks columns
+    for col in range(4):
+        process_line([(col, row) for row in range(4)])
+        
+    #Generates the line coordinates for the diagonals
+    diagonals = [
+        [(i, i) for i in range(4)],
+        [(i, 3 - i) for i in range(4)]
+    ]
+
+    #Checks diagonals
+    for diag in diagonals:
+        process_line(diag)
+
+    return potential_moves
 
 #Returns wether or not the list of inputted pieces are the same color
 def is_same_color(pieces):
@@ -95,7 +137,7 @@ def find_playerboard_piece(player_dark):
 
     for stack_pos in range(3):
 
-        if player_dark.check_top_piece(stack_pos).size > 0:
+        top_piece = player_dark.check_top_piece(stack_pos)
 
             top_piece = player_dark.check_top_piece(stack_pos)
 
@@ -111,8 +153,6 @@ def find_gameboard_piece(game_board, player_light, player_dark, potential_moves,
     largest_piece = None
     largest_piece_size = 0
 
-    avoid_coords = []
-
     #Adds the pieces that are a part of the 3 in a line(s) (potential blocks/scores and the untouchables)
     # to a complete list of coordinates to avoid for picking pieces
     avoid_coords = (
@@ -124,22 +164,27 @@ def find_gameboard_piece(game_board, player_light, player_dark, potential_moves,
     for col in range(4):
         for row in range(4):
 
-            #Skips piece if it part of the coordinates to be avoided
+            #Skips piece if it is part of the coordinates to be avoided
             if (col, row) in avoid_coords:
                 continue
 
             piece = game_board.check_top_piece(col, row)
 
-            #Skips piece is is size 0 (empty) or not the color of the bot
+            #Skips piece if it is size 0 (empty) or not the color of the bot
             if piece.size == 0 or (piece.color != player_dark.color):
                 continue
 
-            #If piece is so far valid, remove the piece from the gameboard and check for a win
+            #Simulates lifting the piece to check for wins and near wins
             removed_piece = game_board.get_piece(col, row)
-            is_win, winner_player = check_win(game_board)
 
-            #If there is not a win
-            if not is_win:
+            is_win, winner_player = check_win(game_board)
+            
+            new_moves, new_untouchables = find_3_in_a_line(game_board, player_dark, player_light)
+
+            uncovered_player_threat = ((col, row) in new_moves.get(player_light.color, []))
+
+            #If there is not a win and moving the piece did not reveal a player piece
+            if not is_win and not uncovered_player_threat:
 
                 #If the piece is a size 4 (the largest) then stop checking for a larger one
                 if piece.size == 4:
@@ -354,14 +399,31 @@ def random_bot_turn(game_board, player_dark):
             #Puts down the piece
             game_board.put_piece(rand_col_put, rand_row_put, actual_piece)
 
+            is_win, winner = check_win(game_board)
+            is_near_win, near_win_player = check_near_win(game_board)
+
+            #If moving the piece creates a 3 or 4 in a line:
+            if is_win or is_near_win:
+
+                game_board.get_piece(rand_col_put, rand_row_put)
+
+                #Put the piece back where it came from
+                if select_playerboard:
+                    player_dark.player_stacks[rand_stack].append(actual_piece)
+
+                else:
+                    game_board.put_piece(rand_col_pick, rand_row_pick, actual_piece)
+
+                continue
+
             break
 
 #Reassigns values to the color values for sorting
 # in order of white, empty, black
 piece_color_order = {
-    1: 0,
-    0: 1,
-    2: 2
+    'light': 0,
+    'initial': 1,
+    'dark': 2
 }
 
 #Returns a tuple of (sorting color value, size) to sorts moves first by color, then by size in decending order
@@ -369,7 +431,7 @@ def check_for_sort(game_board, color_order, coord):
 
     piece = game_board.check_top_piece(coord[0], coord[1])
 
-    color = piece.color.value
+    color = piece.color.name
     size = piece.size
 
     color_sort = color_order.get(color, 99)
@@ -446,4 +508,34 @@ def do_bot_turn(game_board, player_light, player_dark):
     #If there was no largest piece meaning there is no 3 in a line,
     # then complete a random move
     else:
+        print('no 3 in a row, check for 2 in a row')
+
+        dark_2_targets = find_2_in_a_line(game_board, player_dark)
+        untouchable_row_pieces = {player_dark.color: [], player_light.color: []}
+
+        if dark_2_targets:
+
+            mock_potential_moves = {
+                player_dark.color: dark_2_targets,
+                player_light.color: []
+            }
+
+            largest_piece_pos_2 = find_largest_piece(
+                game_board, mock_potential_moves, player_light, player_dark,
+                untouchable_row_pieces
+            )
+
+            print(f'pick up for 2 in a row at {largest_piece_pos_2}')
+
+            if largest_piece_pos_2 is not None:
+                if isinstance(largest_piece_pos_2, tuple):
+                    #Try to win using largest piece from the gameboard
+                    move_executed = moves_largest_gameboard_piece(dark_2_targets, game_board, largest_piece_pos_2)
+
+                elif isinstance(largest_piece_pos_2, int):
+                    #Try to win using largest piece from the playerboard
+                    move_executed = moves_largest_playerboard_piece(dark_2_targets, player_dark, game_board, largest_piece_pos_2, is_scoring_turn = False)
+
+    if not move_executed:
+        print('no 3 or 2 in a row, going random')
         random_bot_turn(game_board, player_dark)
