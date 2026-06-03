@@ -501,7 +501,6 @@ def do_bot_turn(game_board, player_light, player_dark):
     #If there was no largest piece meaning there is no 3 in a line,
     # then complete a random move
     else:
-        print('no 3 in a row, check for 2 in a row')
 
         dark_2_targets = find_2_in_a_line(game_board, player_dark)
         untouchable_row_pieces = {player_dark.color: [], player_light.color: []}
@@ -518,8 +517,6 @@ def do_bot_turn(game_board, player_light, player_dark):
                 untouchable_row_pieces
             )
 
-            print(f'pick up for 2 in a row at {largest_piece_pos_2}')
-
             if largest_piece_pos_2 is not None:
                 if isinstance(largest_piece_pos_2, tuple):
                     #Try to win using largest piece from the gameboard
@@ -527,8 +524,7 @@ def do_bot_turn(game_board, player_light, player_dark):
 
                 elif isinstance(largest_piece_pos_2, int):
                     #Try to win using largest piece from the playerboard
-                    move_executed = moves_largest_playerboard_piece(light_bot_targets, player_dark, game_board, largest_piece_pos, False, player_dark)
+                    move_executed = moves_largest_playerboard_piece(dark_2_targets, player_dark, game_board, largest_piece_pos_2, False, player_dark)
 
     if not move_executed:
-        print('no 3 or 2 in a row, going random')
         random_bot_turn(game_board, player_dark)

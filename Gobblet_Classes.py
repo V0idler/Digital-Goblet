@@ -1,5 +1,5 @@
 
-#Imports enumeration module for player_colo_class
+#Imports enumeration module for player_color_class
 from enum import Enum
 
 #Class that contains a collection of player colors as numbers
@@ -51,18 +51,7 @@ class player_board_class:
         if len(self.player_stacks[coord]) == 0:
             return player_piece_class(player_color_class.initial, 0)
         return self.player_stacks[coord][-1]
-    
-    def reinitialize_from_json(self, player_board_json_data):
-
-        for index in range(3):
-            json_len = len(player_board_json_data[index])
-            pieces_to_remove = 4 - json_len
-            if json_len < 4:
-                for _ in range(pieces_to_remove):
-                    self.player_stacks[index].pop()
    
-
-
 #Class that contains all the attributes and methods of the gameboard and the played pieces
 class game_board_class:
    
@@ -96,20 +85,3 @@ class game_board_class:
     def put_piece(self, col_down, row_down, game_piece):
 
         self.board_stacks[col_down][row_down].append(game_piece)
-
-    def reinitialize_from_json(self, game_board_json_data):
-
-        for col in range(4):
-            for row in range(4):
-                if len(game_board_json_data[col][row]) > 1:
-                    for piece in game_board_json_data[col][row][1:]:
-                        piece_color = piece[0]
-                        piece_size = int(piece[1])
-
-                        if piece_color == 'W':
-                            new_color = player_color_class.light
-                        elif piece_color == 'B':
-                            new_color = player_color_class.dark
-                
-                        new_piece = player_piece_class(new_color, piece_size)
-                        self.board_stacks[col][row].append(new_piece)
