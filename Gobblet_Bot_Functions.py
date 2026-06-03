@@ -131,20 +131,13 @@ def find_3_in_a_line(game_board, player_dark, player_light):
 
 #Finds the largest valid piece in the bot's playerboard by checking each top piece in the stacks for the largest one and returns that coordinate
 def find_playerboard_piece(player_dark):
-
     largest_piece_pos = None
     largest_piece_size = -1
-
     for stack_pos in range(3):
-
         top_piece = player_dark.check_top_piece(stack_pos)
-
-            top_piece = player_dark.check_top_piece(stack_pos)
-
-            if top_piece.size > largest_piece_size:
-                largest_piece_size = top_piece.size
-                largest_piece_pos = stack_pos
-    
+        if top_piece.size > largest_piece_size:
+            largest_piece_size = top_piece.size
+            largest_piece_pos = stack_pos
     return largest_piece_pos
 
 #Finds the largest valid piece on the gameboard by checking every piece on the board for one that does not allow a win for the player if moved
@@ -530,11 +523,11 @@ def do_bot_turn(game_board, player_light, player_dark):
             if largest_piece_pos_2 is not None:
                 if isinstance(largest_piece_pos_2, tuple):
                     #Try to win using largest piece from the gameboard
-                    move_executed = moves_largest_gameboard_piece(dark_2_targets, game_board, largest_piece_pos_2)
+                    move_executed = moves_largest_gameboard_piece(dark_2_targets, game_board, largest_piece_pos_2, player_dark)
 
                 elif isinstance(largest_piece_pos_2, int):
                     #Try to win using largest piece from the playerboard
-                    move_executed = moves_largest_playerboard_piece(dark_2_targets, player_dark, game_board, largest_piece_pos_2, is_scoring_turn = False)
+                    move_executed = moves_largest_playerboard_piece(light_bot_targets, player_dark, game_board, largest_piece_pos, False, player_dark)
 
     if not move_executed:
         print('no 3 or 2 in a row, going random')
