@@ -131,42 +131,41 @@ def check_near_win(game_board):
                 near_win_player = piece_color
    
     #Checks if 3 of the same in the top-left to bottom-right diagonal
+    left_dia_piece_colors = []
     for i in range(4):
-       
-        left_dia_piece_colors = []
 
         #Appends each piece along the diagonal to a list
         # (unless there is no piece, then None is appended)
         piece = game_board.check_top_piece(i, i)
         left_dia_piece_colors.append(piece.color.name if piece else None)
        
-        #Only checks each color (+ None) once by removing duplicates in the list
-        for piece_color in set(left_dia_piece_colors):
-           
-            #If there are 3 of one color in the list for this diagonal
-            # then near_win is True and the near_win_player is assigned to the color of the near win
-            if piece_color is not None and left_dia_piece_colors.count(piece_color) == 3:
-                near_win = True
-                near_win_player = piece_color
+    #Only checks each color (+ None) once by removing duplicates in the list
+    for piece_color in set(left_dia_piece_colors):
+        
+        #If there are 3 of one color in the list for this diagonal
+        # then near_win is True and the near_win_player is assigned to the color of the near win
+        if piece_color is not None and left_dia_piece_colors.count(piece_color) == 3:
+            near_win = True
+            near_win_player = piece_color
    
+
     #Checks if 3 of the same in the top-right to bottom-left diagonal
+    right_dia_piece_colors = []
     for i in range(4):
-       
-        right_dia_piece_colors = []
        
         #Appends each piece along the diagonal to a list
         # (unless there is no piece, then None is appended)
         piece = game_board.check_top_piece(i, 3 - i)
         right_dia_piece_colors.append(piece.color.name if piece else None)
        
-        #Only checks each color (+ None) once by removing duplicates in the list
-        for piece_color in set(right_dia_piece_colors):
-           
-            #If there are 3 of one color in the list for this diagonal
-            # then near_win is True and the near_win_player is assigned to the color of the near win
-            if piece_color is not None and right_dia_piece_colors.count(piece_color) == 3:
-                near_win = True
-                near_win_player = piece_color
+    #Only checks each color (+ None) once by removing duplicates in the list
+    for piece_color in set(right_dia_piece_colors):
+        
+        #If there are 3 of one color in the list for this diagonal
+        # then near_win is True and the near_win_player is assigned to the color of the near win
+        if piece_color is not None and right_dia_piece_colors.count(piece_color) == 3:
+            near_win = True
+            near_win_player = piece_color
                
     return near_win, near_win_player
    
