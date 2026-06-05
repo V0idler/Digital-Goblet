@@ -1,6 +1,6 @@
 # Digital-Goblet
 
-    This is a digital version of the game Gobblet programed in VS Code as a graphics based local 2 player game.
+    This is a digital version of the game Gobblet programed in VS Code as a graphics based local 1 player vs bot game.
 
 # Game Rules:
 
@@ -14,7 +14,6 @@ Important:
     When adding pieces to the game board they are taken from the player stacks in order from largest to smallest.
     Once you pick up a piece you have to move it, you cannot put it back down in the same place and you don't get to undo your turn and try again.
     The game is considered a tie when both players have made the same move of moving a piece back & forth between 2 locations on the board 3 times. Other than that it is up to the players to determine a tie.
-
 
 Turns:
     During your turn you play one piece, you can either add a new piece to (an empty spot on) the game board from your stacks or move a piece that is already on the game board to an empty spot or gobble up a piece.

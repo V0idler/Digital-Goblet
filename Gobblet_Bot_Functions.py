@@ -531,10 +531,6 @@ def do_bot_turn(game_board, player_light, player_dark):
                 #Try to block using largest piece from the gameboard
                 move_executed = moves_largest_gameboard_piece(light_bot_targets, game_board, largest_piece_pos, player_dark)
 
-            #If the move was not fully executed, then it is not possible and a random move is completed
-            if not move_executed:
-                random_bot_turn(game_board, player_dark)
-
         #If it is a playerboard coordinate:
         elif isinstance(largest_piece_pos, int):
 
@@ -549,17 +545,14 @@ def do_bot_turn(game_board, player_light, player_dark):
 
                 #Try to block using largest piece from the playerboard
                 move_executed = moves_largest_playerboard_piece(light_bot_targets, player_dark, game_board, largest_piece_pos, False, player_dark)
-
-            #If the move was not fully executed, then it is not possible and a random move is completed
-            if not move_executed:
-                random_bot_turn(game_board, player_dark)
     
-    #If there was no largest piece selected, meaning there is no 3 in a line,
+    #If there were no possible moves for a 3 in a line:
     # then check if there is a 2 in a line to add to
-    else:
+    if not move_executed:
 
-        #Retrieves the potential moves for adding to the 2 in a row
+        #Retrieves & sorts the potential moves for adding to the 2 in a row
         dark_2_targets, untouchable_2_pieces = find_2_in_a_line(game_board, player_dark)
+        potential_moves_sort(dark_2_targets, game_board)
         #Adds the new list of untouchable pieces to the new dictionary of untouchable pieces
         # (this only checks for the bot, so the player has no untouchable pieces)
         untouchable_row_pieces = {player_dark.color: untouchable_2_pieces, player_light.color: []}
