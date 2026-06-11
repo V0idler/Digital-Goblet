@@ -11,6 +11,8 @@ pygame.init()
 
 #Sets menu as active
 menu_active = True
+#Intializes the no autosave text to False
+autosave_text = False
 
 #Loop asking if the players want to load the game, continues until a valid input is entered
 while menu_active:
@@ -20,6 +22,10 @@ while menu_active:
     #Draws the menu screen
     screen.fill(med_color)
     load_button, newgame_button = draw_menu()
+    #If the load button was clicked, but there is no autosave:
+    if autosave_text:
+        #Display message stating as such
+        draw_no_autosave()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -37,7 +43,7 @@ while menu_active:
 
                 load_result = load_game()
                 if load_result is None:
-                    draw_no_autosave()
+                    autosave_text = True
                 else:
                     game_board, player_light, player_dark, current_player = load_result
                     menu_active = False
@@ -49,7 +55,7 @@ while menu_active:
             
                 player_light, player_dark, game_board = setup_newgame()
                 current_player = random.choice((player_light, player_dark))
-                
+
                 picking_piece = True
                 selected_piece = None
                 col_up = None
