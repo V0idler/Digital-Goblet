@@ -32,7 +32,7 @@ light_out_color = (235, 88, 58)
 
 blank_out_color = (163, 18, 59)
 blank_piece_color = (148, 19, 56)
-#-----------------
+#-----------------------
 
 #Board dimentions
 board_size = 320
@@ -55,7 +55,7 @@ large_font = pygame.font.SysFont('Nunito', 120)
 
 game_over_text = basic_font.render(f'Game Over', True, off_white)
 
-#Menu----------------------------------------------------------------
+#Menu / other interface ----------------------------------------------------------------
 
 #Prints text explaining the rules of the game
 game_rules_text = [
@@ -498,9 +498,6 @@ def player_mouse_click(mouse_pos, game_board, current_player, player_light,
                     move_completed = True
                     picking_piece = True
                     selected_piece = None
-
-                    #Records current game move
-                    record_moves(current_player.color.name, piece_source_board, col_up, row_up, col_clicked, row_clicked)
             
             #If the player clicked somewhere that is not the gameboard:
             # then the loop requires that the player choose again

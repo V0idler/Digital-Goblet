@@ -49,6 +49,13 @@ while menu_active:
             
                 player_light, player_dark, game_board = setup_newgame()
                 current_player = random.choice((player_light, player_dark))
+                
+                picking_piece = True
+                selected_piece = None
+                col_up = None
+                col_down = None
+                piece_source_board = None
+                move_history.clear()
 
                 menu_active = False
                 break
@@ -92,6 +99,12 @@ while True:
                 game_active = True
                 game_won = False
                 game_tied = False
+                picking_piece = True
+                selected_piece = None
+                col_up = None
+                col_down = None
+                piece_source_board = None
+                move_history.clear()
 
             #If the game is currently happening and it is the player's turn:
             # carries out the player's turn

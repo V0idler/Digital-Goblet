@@ -27,6 +27,7 @@ Turns:
     pick up their piece.
     4. After a piece is picked up the program will display the current piece in the top right.
     5. For putting down a piece the player clicks where they want to put it down.
-    6. After the current player has successfully picked up and put down a piece then their turn is over and it switches to the next bot's turn.
-    7. The bot's turn is entirely automatic.
-    8. The program continues running in a loop until a player wins or the game is tied and then it is stopped.
+    6. If the player tries to place a piece in an invalid location then the piece is not put down and the program waits for them to try again.
+    7. After the current player has successfully picked up and put down a piece then their turn is over and it switches to the bot's turn.
+    8. The bot's turn is entirely automatic.
+    9. The program continues running in a loop until a player wins or the game is tied and then it is stopped.

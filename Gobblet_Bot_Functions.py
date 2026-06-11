@@ -1,6 +1,5 @@
 
 from itertools import combinations 
-from functools import partial
 from Gobblet_Functions import check_win, check_near_win, record_moves
 import random
 
@@ -485,7 +484,7 @@ def potential_moves_sort(potential_moves, game_board):
         # and the move info at the previous position is larger than the current move info)
         while prev_index >= 0 and move_key(game_board, color_order, potential_moves[prev_index]) > current_piece_info:
 
-            #Shifts the larger move info to the right
+            #Shifts the larger move info to the right by duplicating the moves to the right
             potential_moves[prev_index + 1] = potential_moves[prev_index]
             #Move previous index to the left to check the next move
             prev_index -= 1
@@ -526,7 +525,7 @@ def do_bot_turn(game_board, player_light, player_dark):
                 move_executed = moves_largest_gameboard_piece(dark_bot_targets, game_board, largest_piece_pos, player_dark)
                 
             #If the player needs to be blocked:
-            elif light_bot_targets:
+            if not move_executed and light_bot_targets:
 
                 #Try to block using largest piece from the gameboard
                 move_executed = moves_largest_gameboard_piece(light_bot_targets, game_board, largest_piece_pos, player_dark)
@@ -541,7 +540,7 @@ def do_bot_turn(game_board, player_light, player_dark):
                 move_executed = moves_largest_playerboard_piece(dark_bot_targets, player_dark, game_board, largest_piece_pos, True, player_dark)
                 
             #If the player needs to be blocked:
-            elif light_bot_targets:
+            if not move_executed and light_bot_targets:
 
                 #Try to block using largest piece from the playerboard
                 move_executed = moves_largest_playerboard_piece(light_bot_targets, player_dark, game_board, largest_piece_pos, False, player_dark)
@@ -577,11 +576,21 @@ def do_bot_turn(game_board, player_light, player_dark):
                 if isinstance(largest_piece_pos_2, tuple):
                     #Try to add using largest piece from the gameboard
                     move_executed = moves_largest_gameboard_piece(dark_2_targets, game_board, largest_piece_pos_2, player_dark)
+                    #If it didn't execute using a piece from the gameboard, then try the playerboard
+                    if not move_executed:
+                        player_board_stack = find_playerboard_piece(player_dark)
+                        if player_board_stack is not None:
+                            move_executed = moves_largest_playerboard_piece(dark_2_targets, player_dark, game_board, largest_piece_pos_2, False, player_dark)
 
                 #If it is from the playerboard:
                 elif isinstance(largest_piece_pos_2, int):
                     #Try to add using largest piece from the playerboard
                     move_executed = moves_largest_playerboard_piece(dark_2_targets, player_dark, game_board, largest_piece_pos_2, False, player_dark)
+                    #If it didn't execute using a piece from the playerboard, then try the gameboard
+                    if not move_executed:
+                        gameboard_coord = find_gameboard_piece(game_board, player_light, player_dark, {player_dark.color: dark_2_targets}, untouchable_row_pieces)
+                        if gameboard_coord is not None:
+                            move_executed = moves_largest_gameboard_piece(dark_2_targets, game_board, largest_piece_pos_2, player_dark)
 
     #If there were no possible moves for 3 or 2 in a lines then play out a random turn
     if not move_executed:

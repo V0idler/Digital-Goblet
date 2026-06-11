@@ -206,7 +206,7 @@ def check_tie(move_history):
     last_identical = False
 
     #If there are 6 moves in move_history
-    if len(move_history) == 6:
+    if len(move_history) >= 6:
 
         #The current and last players are in the last and second last move of the move history
         # at position 0 of the inputed move information
@@ -247,7 +247,8 @@ def check_tie(move_history):
             tie = True
 
         #Removes oldest move from the history to make room for the next
-        move_history.pop(0)
+        while len(move_history) > 5:
+            move_history.pop(0)
 
     return tie
 
